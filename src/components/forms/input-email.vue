@@ -1,0 +1,64 @@
+<template>
+  <v-text-field
+    variant="outlined"
+    :label="label"
+    :rules="rules"
+    v-model="model"
+    type="email"
+    :required="required"
+    :placeholder="placeholder"
+    :error-messages="errorMessages"
+  ></v-text-field>
+</template>
+<script setup>
+import { computed } from 'vue';
+
+const props = defineProps({
+  modelValue: {type: String, required: true},
+  label: {type: String, required: true},
+  required: {type: Boolean, default: true},
+  placeholder: {type: String, default: ''},
+  externalError: { type: Boolean, default: false },
+  mask: { type: String, default: '' },
+  isTelefone: { type: Boolean, default: false },
+});
+const errorMessages = ref([]);
+const maskedModel = ref(props.modelValue);
+let maskCanChange = props.mask;
+
+const rules = computed(() => {
+  const rules = [];
+  if (props.required) {
+    rules.push((v) => !!v || 'Campo obrigatório');
+  }
+  rules.push((v) => /.+@.+\..+/.test(v) || 'E-mail inválido');
+  return rules;
+});
+
+
+const emit = defineEmits(['update:modelValue']);
+const model = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value),
+});
+
+watch(() => props.modelValue, (newVal) => {
+  if (props.mask) {
+    maskedModel.value = props.mask(newVal);
+  } else {
+    maskedModel.value = newVal;
+  }
+});
+
+watch(() => props.externalError,
+  (newVal) => {
+    if (newVal) {
+      errorMessages.value = rules.value
+        .map((rule) => rule(props.modelValue))
+        .filter((msg) => msg !== true);
+    } else {
+      errorMessages.value = [];
+    }
+  }
+);
+</script>
