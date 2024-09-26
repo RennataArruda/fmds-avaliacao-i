@@ -3,16 +3,24 @@
 
     <v-card flat>
       <v-card-title class="d-flex align-center pe-2">
-        <v-icon icon="mdi-calendar" color="primary"></v-icon> &nbsp;<span class="text-primary">Buscar Eventos</span>
+        <v-responsive>
+          <v-icon icon="mdi-calendar" color="primary"></v-icon> &nbsp;<span class="text-primary">Buscar Eventos</span>
+          <v-row>
+            <v-col cols="12" sm="10">
+              <v-text-field
+                v-model="search" density="compact" label="Pesquisa rápida"
+                prepend-inner-icon="mdi-magnify" variant="solo-filled" flat hide-details single-line>
+              </v-text-field>
+            </v-col>
+            <v-col cols="12" sm="2">
+              <v-btn class="ml-3" density="compact" to="/evento"
+                     color="primary" icon="mdi-plus" v-tooltip="'Adicionar Evento'"></v-btn>
+            </v-col>
+          </v-row>
 
-        <v-spacer></v-spacer>
 
-        <v-text-field
-          v-model="search" density="compact" label="Pesquisa rápida"
-          prepend-inner-icon="mdi-magnify" variant="solo-filled" flat hide-details single-line>
-        </v-text-field>
-        <v-btn class="ml-3" density="compact" to="/evento"
-               color="primary" icon="mdi-plus" v-tooltip="'Adicionar Evento'"></v-btn>
+
+        </v-responsive>
       </v-card-title>
 
       <v-card-text>
