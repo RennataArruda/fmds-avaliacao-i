@@ -17,9 +17,6 @@
                      color="primary" icon="mdi-plus" v-tooltip="'Adicionar Evento'"></v-btn>
             </v-col>
           </v-row>
-
-
-
         </v-responsive>
       </v-card-title>
 
@@ -55,11 +52,11 @@
 
 <script setup>
 import {ref} from 'vue';
-import { useEventosStore } from '@/stores/eventos';
 import MainHeader from "@/components/others/main-header.vue";
 import ConfirmDialog from "@/components/others/confirm-dialog.vue";
 import Alerts from "@/components/others/alerts.vue";
 import api from '@/resources/eventosResource';
+
 const eventos = ref([]);
 const eventToDelete = ref(null);
 const totalEventos = ref(0);
@@ -92,14 +89,18 @@ const confirmDelete = (item) => {
   confirmDialog.value.openDialog();
 };
 
-const handleDelete = (confirmed) => {
+const handleDelete = async (confirmed) => {
   if (confirmed) {
-    useEventosStore().removeEvento(eventToDelete.value.id);
-    showSuccess();
-    setTimeout(() => {
-      eventos.value = useEventosStore().getEventos;
-      snackbarVisible.value = false;
-    }, 200);
+    try {
+      await api.deleteEvento(eventToDelete.value.id);
+      showSuccess();
+      await dataSearch();
+    } catch (e) {
+      alertType.value = 'error';
+      alertMessage.value = 'Erro ao deletar evento';
+      snackbarVisible.value = true;
+      return;
+    }
   }
 };
 
@@ -124,9 +125,7 @@ const dataSearch = async (options) => {
   }
   searchOptions.search = search.value;
   const response = await api.searchEventos(searchOptions);
-  console.log(response);
   eventos.value = response.data;
-  console.log(eventos.value);
   totalEventos.value = response.total;
   loading.value = false;
 }

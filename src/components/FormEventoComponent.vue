@@ -123,7 +123,7 @@
 </template>
 
 <script setup>
-import {ref } from 'vue';
+import {ref} from 'vue';
 import CommonInput from "@/components/forms/common-input.vue";
 import SelectTipoEvento from "@/components/forms/select-tipo-evento.vue";
 import InputTextarea from "@/components/forms/input-textarea.vue";
@@ -136,21 +136,21 @@ import InputEmail from "@/components/forms/input-email.vue";
 import InputTelefone from "@/components/forms/input-telefone.vue";
 import CommonInputNumber from "@/components/forms/common-input-number.vue";
 import Alerts from "@/components/others/alerts.vue";
-import { useEventosStore } from '@/stores/eventos';
-import { useRouter, useRoute } from 'vue-router';
-import { generateUUID } from '@/utils/uuid';
+import {useRoute, useRouter} from 'vue-router';
+import api from '@/resources/eventosResource';
+
 
 const $route = useRouter();
 const $routeCurrent = useRoute();
 const id = ref($routeCurrent.params.id);
+
 let $evento = null;
 
-if (!!id.value)
-  $evento = useEventosStore().getEventoById(id.value);
+
 
 const isFormValid = ref(false);
 const onSubmitFormInvalid = ref(false);
-const evento = ref($evento || {
+const evento = ref({
   contratante: {
     nome: '',
     email: '',
@@ -192,32 +192,66 @@ const confirmarConvidado = (convidadoData) => {
   convidadoModalOpen.value = false;
 };
 
-const submitForm = () => {
+const submitForm = async () => {
   if (!!isFormValid.value) {
     const erro = validarFormulario();
     if (!!erro) {
       showError(erro);
       setTimeout(() => {snackbarVisible.value = false;}, 3000);
     } else {
-      if (!evento.value.id) {
-        evento.value.id = generateUUID();
-        useEventosStore().addEvento(evento.value);
+      if (!id.value) {
+        await onCreateEvento();
       } else {
-        useEventosStore().updateEvento(evento.value, id.value);
+        await onUpdateEvento();
       }
-      showSuccess();
-
-      setTimeout(() => {
-        snackbarVisible.value = false;
-        $route.push('/meus-eventos');
-      }, 1000);
     }
   } else {
-    onSubmitFormInvalid.value = true;
+    invalidForm();
+  }
+};
 
-    setTimeout(() => {
-      onSubmitFormInvalid.value = false;
-    }, 3000);
+const invalidForm = () => {
+  onSubmitFormInvalid.value = true;
+  setTimeout(() => {
+    onSubmitFormInvalid.value = false;
+  }, 3000);
+};
+
+const onSuccessfulSubmit = () => {
+  showSuccess();
+  setTimeout(() => {
+    snackbarVisible.value = false;
+    $route.push('/meus-eventos');
+  }, 1000);
+};
+
+const onCreateEvento = async () => {
+  try {
+    const result = await api.createEvento(evento.value);
+    if (!result) {
+      showError('Erro ao criar o evento. Tente novamente mais tarde.');
+      return;
+    } else {
+      onSuccessfulSubmit();
+    }
+  } catch (e) {
+    showError('Erro ao criar o evento. Tente novamente mais tarde.');
+    return;
+  }
+};
+
+const onUpdateEvento = async () => {
+  try {
+    const result = await api.updateEvento(evento.value, id.value);
+    if (!result) {
+      showError('Erro ao atualizar o evento. Tente novamente mais tarde.');
+      return;
+    } else {
+      onSuccessfulSubmit();
+    }
+  } catch (e) {
+    showError('Erro ao atualizar o evento. Tente novamente mais tarde.');
+    return;
   }
 };
 
@@ -245,5 +279,12 @@ const showError = (erroMessagem) => {
   alertMessage.value = erroMessagem;
   snackbarVisible.value = true;
 };
+
+const getEvento = async () => {
+  const response = await api.getEvento(id.value);
+  evento.value = response;
+};
+
+if (!!id.value) getEvento();
 
 </script>

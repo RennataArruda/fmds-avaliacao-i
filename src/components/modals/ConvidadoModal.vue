@@ -40,7 +40,6 @@
 import { ref, watch } from 'vue';
 import CommonInput from "@/components/forms/common-input.vue";
 import InputTelefone from "@/components/forms/input-telefone.vue";
-import { generateUUID } from '@/utils/uuid';
 
 const isFormValid = ref(false);
 const onSubmitFormInvalid = ref(false);
@@ -65,17 +64,12 @@ watch(() => props.convidado, (newVal) => {
     convidadoData.value.nome = newVal.nome || '';
     convidadoData.value.telefone = newVal.telefone || '';
     convidadoData.value.confirmado = newVal.confirmado || false;
-
-    console.log('convidadoData', convidadoData.value);
   }
 });
 
 const confirmar = () => {
 
   if (isFormValid.value) {
-    if (props.isEditing) convidadoData.value.id = props.convidado.id;
-    else convidadoData.value.id = generateUUID();
-
     emit('confirm', convidadoData.value);
     emit('update:modalOpen', false);
   } else {
