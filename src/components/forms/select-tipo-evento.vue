@@ -22,14 +22,16 @@ const props = defineProps({
 });
 
 const options = [
-  'Casamentos',
-  'Confraternizações',
-  'Aniversários',
-  'Festas',
   'Encontros Casuais',
+  'Festas',
+  'Casamentos',
+  'Reuniões',
   'Eventos Corporativos',
-  'Não se aplica'
+  'Reuniões Familiares',
+  'Cerimônias',
+  'Educação'
 ];
+
 
 const rules = computed(() => {
   const rules = [];

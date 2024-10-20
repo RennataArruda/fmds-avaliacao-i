@@ -14,6 +14,6 @@ export function registerPlugins (app) {
   app
     .use(vuetify)
     .use(router)
-    .use(pinia)
     .use(VueTheMask)
+    .use(pinia)
 }

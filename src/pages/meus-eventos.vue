@@ -24,18 +24,19 @@
       </v-card-title>
 
       <v-card-text>
-        <v-data-table
+        <v-data-table-server
           v-model:search="search"
           :headers="headers"
           :items="eventos"
           density="compact"
+          :items-length="totalEventos"
           item-key="id"
+          :loading="loading"
+          @update:options="dataSearch"
           no-data-text="Nenhum evento encontrado"
-          :items-per-page-options="itensPerPage">
-
-          <template v-slot:item.confirms="{ item }">
-            {{getConfirmsText(item)}}
-          </template>
+          :items-per-page="itensPerPage"
+          item-value="name"
+          :items-per-page-options="itensPerPageOptions">
           <template v-slot:item.actions="{ item }">
             <v-btn
               icon="mdi-eye" class="ma-1" size="x-small" :to="'/evento/' + item.id"
@@ -44,7 +45,7 @@
             <v-btn icon="mdi-delete" class="ma-1" size="x-small" @click="confirmDelete(item)"
               color="error" v-tooltip="'Deletar'"/>
           </template>
-        </v-data-table>
+        </v-data-table-server>
       </v-card-text>
     </v-card>
 
@@ -58,8 +59,11 @@ import { useEventosStore } from '@/stores/eventos';
 import MainHeader from "@/components/others/main-header.vue";
 import ConfirmDialog from "@/components/others/confirm-dialog.vue";
 import Alerts from "@/components/others/alerts.vue";
-const eventos = ref(useEventosStore().getEventos);
+import api from '@/resources/eventosResource';
+const eventos = ref([]);
 const eventToDelete = ref(null);
+const totalEventos = ref(0);
+const loading = ref(false);
 
 const snackbarVisible = ref(false);
 const alertType = ref('');
@@ -67,27 +71,21 @@ const alertMessage = ref('');
 
 const search = ref('');
 
-
-const itensPerPage = ref([
+const itensPerPage = ref(10);
+const itensPerPageOptions = ref([
   {value: 5, title: '5'},
   {value: 10, title: '10'},
   {value: 15, title: '15'}
 ]);
 
 const headers = ref([
-  {title: 'Tipo', align: 'start', key: 'tipo'},
-  {title: 'Nome', align: 'start', key: 'nome'},
-  {title: 'Local', align: 'start', key: 'local'},
-  {title: 'Data', align: 'start', key: 'data'},
-  {title: 'Confirmados', align: 'start', key: 'confirms'},
+  {title: 'Tipo', align: 'start', key: 'tipoEvento', sortable: false},
+  {title: 'Nome', align: 'start', key: 'nomeEvento', sortable: false},
+  {title: 'Local', align: 'start', key: 'localEvento', sortable: false},
+  {title: 'Data', align: 'start', key: 'dataEvento'},
+  {title: 'Confirmados', align: 'start', key: 'confirmados', sortable: false},
   {title: '', align: 'start', key: 'actions', sortable: false}
 ]);
-
-const getConfirmsText = (evento) => {
-  const convidados = evento.convidados || [];
-  const confirmados = convidados.map(c => c.confirmado).reduce((acc, c) => acc + c, 0);
-  return `${confirmados} de ${convidados.length}`;
-}
 
 const confirmDelete = (item) => {
   eventToDelete.value = item;
@@ -112,6 +110,28 @@ const showSuccess = () => {
   alertMessage.value = 'Operação realizada com sucesso!';
   snackbarVisible.value = true;
 };
+
+const dataSearch = async (options) => {
+  loading.value = true;
+  const searchOptions = {}
+  if (options) {
+    if (options.sortBy.length > 0) {
+      searchOptions.sortKey = options.sortBy[0].key;
+      searchOptions.sortOrder = options.sortBy[0].order;
+    }
+    searchOptions.page = options.page || 1;
+    searchOptions.limit = options.itemsPerPage || itensPerPage.value;
+  }
+  searchOptions.search = search.value;
+  const response = await api.searchEventos(searchOptions);
+  console.log(response);
+  eventos.value = response.data;
+  console.log(eventos.value);
+  totalEventos.value = response.total;
+  loading.value = false;
+}
+
+
 
 </script>
 
