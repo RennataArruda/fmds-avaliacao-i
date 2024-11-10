@@ -1,4 +1,6 @@
 import axios from 'axios';
+import tokenUtils from '@/utils/validar-token';
+
 
 const api = axios.create({
   baseURL: 'http://localhost:5000/api',
@@ -7,7 +9,15 @@ const api = axios.create({
 
 const searchEventos = async (search) => {
   try {
-    const response = await api.post(`/eventos/search`, search);
+    const token = await tokenUtils.getToken();
+    if (!token) {
+      return [];
+    }
+    const response = await api.post(`/eventos/search`, search, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error(error);
@@ -17,7 +27,15 @@ const searchEventos = async (search) => {
 
 const getEvento = async (id) => {
   try {
-    const response = await api.get(`/eventos/${id}`);
+    const token = await tokenUtils.getToken();
+    if (!token) {
+      return {};
+    }
+    const response = await api.get(`/eventos/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error(error);
@@ -27,7 +45,15 @@ const getEvento = async (id) => {
 
 const updateEvento = async (evento, id) => {
   try {
-    const response = await api.put(`/eventos/${id}`, evento);
+    const token = await tokenUtils.getToken();
+    if (!token) {
+      return {};
+    }
+    const response = await api.put(`/eventos/${id}`, evento, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error(error);
@@ -37,7 +63,15 @@ const updateEvento = async (evento, id) => {
 
 const createEvento = async (evento) => {
   try {
-    const response = await api.post(`/eventos`, evento);
+    const token = await tokenUtils.getToken();
+    if (!token) {
+      return {};
+    }
+    const response = await api.post(`/eventos`, evento, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error(error);
@@ -47,7 +81,16 @@ const createEvento = async (evento) => {
 
 const deleteEvento = async (id) => {
   try {
-    const response = await api.delete(`/eventos/${id}`);
+
+    const token = await tokenUtils.getToken();
+    if (!token) {
+      return {};
+    }
+    const response = await api.delete(`/eventos/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
     console.error(error);
